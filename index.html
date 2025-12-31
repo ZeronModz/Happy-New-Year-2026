@@ -3,385 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 Experience | Premium Wish</title>
+    <title>2026 | The Next Chapter</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;500&display=swap" rel="stylesheet">
+
     <style>
-        /* --- PREMIUM IMPORTS --- */
-        @import url('https://fonts.googleapis.com/css2?family=Italiana&family=Playfair+Display:ital,wght@1,400;1,700&family=Montserrat:wght@200;600&display=swap');
-
         :root {
-            --gold: #d4af37;
-            --neon-blue: #00f3ff;
-            --deep-bg: #050505;
+            --text-primary: #1a1a1a;
+            --text-secondary: #555;
+            --accent: #d4af37; /* Champagne Gold */
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background-color: var(--deep-bg);
-            color: white;
-            font-family: 'Montserrat', sans-serif;
+            margin: 0;
             overflow: hidden;
-            height: 100vh;
-            width: 100vw;
+            background: var(--bg-gradient);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
         }
 
-        /* --- STAGE MANAGEMENT --- */
-        .stage {
+        /* Canvas Background */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Texture Overlay for Grainy Film Look (Ultra Modern) */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Main UI Container */
+        .ui-container {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
-            z-index: 10;
+            pointer-events: none; /* Allows 3D interaction */
         }
 
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(1.1);
-            z-index: -1;
-        }
-
-        /* ================= SCENE 1: THE UNLOCK ================= */
-        #scene1 { background: radial-gradient(circle, #1a1a2e 0%, #000 100%); }
-
-        .unlock-btn {
-            background: transparent;
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            padding: 20px 50px;
-            font-family: 'Italiana', serif;
-            font-size: 1.5rem;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.5s;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-        }
-
-        .unlock-btn:hover {
-            background: var(--gold);
-            color: #000;
-            box-shadow: 0 0 50px rgba(212, 175, 55, 0.6);
-        }
-
-        .hint-text {
-            margin-top: 20px;
-            font-size: 0.8rem;
-            opacity: 0.5;
-            letter-spacing: 2px;
-            animation: pulse 2s infinite;
-        }
-
-        /* ================= SCENE 2: THE FLOWERS & MESSAGE ================= */
-        #scene2 { 
-            background: #000; 
-            pointer-events: none; /* Let clicks pass through */
-        }
-        
-        .message-box {
+        .hero-text-wrapper {
             text-align: center;
-            max-width: 80%;
+            mix-blend-mode: multiply; /* Blends text with 3D elements behind */
         }
 
-        .typing-text {
+        /* Editorial Typography */
+        .pre-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            opacity: 0; /* Animated later */
+        }
+
+        h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            font-style: italic;
-            background: linear-gradient(to right, #fff, #abaacc);
-            -webkit-background-clip: text;
-            color: transparent;
-            line-height: 1.5;
-        }
-
-        /* Flower Petals CSS */
-        .petal {
-            position: absolute;
-            background: linear-gradient(45deg, #ff9a9e, #fecfef);
-            border-radius: 100% 0 100% 0;
-            opacity: 0.8;
-            animation: fall linear forwards;
-        }
-
-        /* ================= SCENE 3: THE GRAND FINALE ================= */
-        #scene3 { z-index: 5; }
-        
-        #canvas {
-            position: absolute;
-            top: 0; left: 0;
-            z-index: 1;
-        }
-
-        .final-content {
-            position: relative;
-            z-index: 10;
-            text-align: center;
-            mix-blend-mode: screen; /* Blends text with fireworks */
-        }
-
-        h1.glitch-header {
-            font-family: 'Italiana', serif;
-            font-size: 6vw; /* Responsive size */
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 10px;
-            margin-bottom: 0;
-            text-shadow: 0 0 30px rgba(255,255,255,0.5);
-            animation: textShine 3s infinite alternate;
-        }
-
-        .big-year {
-            font-size: 15vw;
-            font-weight: 900;
+            font-size: 10vw; /* Responsive huge text */
             line-height: 0.9;
-            background: linear-gradient(to bottom, #fff 0%, #888 50%, #000 100%); /* Chrome effect */
-            -webkit-background-clip: text;
-            color: transparent;
-            -webkit-text-stroke: 2px rgba(255,255,255,0.3);
-            position: relative;
-        }
-
-        .big-year::after {
-            content: '2026';
-            position: absolute;
-            left: 0; top: 0;
-            width: 100%;
-            color: transparent;
-            text-shadow: 0 0 50px var(--neon-blue);
-            z-index: -1;
-            opacity: 0.5;
-            animation: flicker 2s infinite;
-        }
-
-        .name-highlight {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            color: var(--gold);
-            display: block;
-            margin-top: 20px;
+            margin: 0;
+            font-weight: 400;
+            color: #111;
             font-style: italic;
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+            overflow: hidden;
+        }
+        
+        h1 span {
+            display: inline-block;
+            transform: translateY(100%); /* Hidden initially */
+        }
+
+        .year-huge {
+            font-family: 'Inter', sans-serif;
+            font-size: 12vw;
+            font-weight: 700;
+            letter-spacing: -5px;
+            color: transparent;
+            -webkit-text-stroke: 2px #111;
+            margin-top: -2vw;
+            display: block;
             opacity: 0;
-            animation: slideUp 1s ease-out forwards 1s;
         }
 
-        .footer {
-            position: absolute;
-            bottom: 20px;
-            font-size: 10px;
-            color: rgba(255,255,255,0.3);
+        .wish-message {
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            font-weight: 300;
+            color: var(--text-secondary);
+            max-width: 400px;
+            line-height: 1.6;
+            opacity: 0;
+        }
+
+        /* Modern Button */
+        .cta-btn {
+            pointer-events: auto;
+            margin-top: 3rem;
+            padding: 15px 40px;
+            border: 1px solid #111;
+            background: transparent;
+            color: #111;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            z-index: 20;
+            letter-spacing: 2px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            opacity: 0;
         }
 
-        /* --- ANIMATIONS --- */
-        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
-        @keyframes fall {
-            to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        .cta-btn:hover {
+            background: #111;
+            color: #fff;
+            transform: scale(1.05);
         }
-        @keyframes flicker {
-            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 0.5; }
-            20%, 24%, 55% { opacity: 1; text-shadow: 0 0 80px var(--neon-blue); }
-        }
-        @keyframes textShine { from { filter: brightness(100%); } to { filter: brightness(150%); } }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+        /* Mobile Adjustments */
         @media (max-width: 768px) {
-            h1.glitch-header { font-size: 2.5rem; letter-spacing: 5px; }
-            .big-year { font-size: 25vw; }
-            .name-highlight { font-size: 2rem; }
-            .unlock-btn { padding: 15px 30px; font-size: 1.2rem; }
+            h1 { font-size: 15vw; }
+            .year-huge { font-size: 20vw; -webkit-text-stroke: 1px #111;}
+            .wish-message { font-size: 1rem; padding: 0 20px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="scene1" class="stage">
-        <button class="unlock-btn" onclick="startJourney()">Enter 2026</button>
-        <p class="hint-text">Turn up your brightness</p>
-    </div>
+    <div id="canvas-container"></div>
+    <div class="noise-overlay"></div>
 
-    <div id="scene2" class="stage hidden">
-        <div class="message-box">
-            <p id="typewriter" class="typing-text"></p>
+    <div class="ui-container">
+        <div class="hero-text-wrapper">
+            <div class="pre-title">ওহে আমার প্রিয়তমা</div>
+            <h1>
+                <span>Happy</span> <br> <span>New Year</span>
+            </h1>
+            <div class="year-huge">2026</div>
+            <div class="wish-message">
+                ঘড়ির কাঁটা বদলে যাচ্ছে, ক্যালেন্ডারের পাতাটাও নতুন। কিন্তু তোমার প্রতি আমার এই টান আর ভালোবাসাটা সেই আগের মতোই অটুট আছে। আমি চাই নতুন বছরের ৩৬৫টা দিনই আমরা একে অপরের হাত ধরে কাটিয়ে দিই। অনেক স্বপ্ন ডানা মেলেছে মনে, আর সেই সব স্বপ্নের কেন্দ্রে আছো শুধু তুমি। আগামী দিনগুলো তোমার জীবনে বয়ে আনুক অনাবিল সুখ আর শান্তি। সবসময় এভাবেই থেকো আমার পাশে। Happy New Year, প্রিয়তমা!
+            </div>
+        
         </div>
     </div>
-
-    <div id="scene3" class="stage hidden">
-        <canvas id="canvas"></canvas>
-        <div class="final-content">
-            <h1 class="glitch-header">Happy New Year</h1>
-            <div class="big-year">2026</div>
-            <span id="recipientName" class="name-highlight"></span>
-        </div>
-    </div>
-
-    <div class="footer">Experience Design by DevZeron</div>
 
     <script>
-        // --- 1. CONFIG & SETUP ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const name = urlParams.get('name') || "Everyone";
-        document.getElementById('recipientName').innerText = name;
-        document.title = `2026 Wish for ${name}`;
+        // --- SCENE SETUP (Modern Light Theme) ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f5f7); // Soft Apple-like white
+        scene.fog = new THREE.Fog(0xf5f5f7, 10, 50);
 
-        // --- 2. JOURNEY CONTROL ---
-        function startJourney() {
-            // Hide Scene 1
-            document.getElementById('scene1').classList.add('hidden');
-            
-            // Show Scene 2
-            const scene2 = document.getElementById('scene2');
-            scene2.classList.remove('hidden');
-            
-            // Start Flower Rain
-            createFlowerRain();
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 0, 20);
 
-            // Typewriter Effect
-            const text = `Goodbye 2025... \n A new chapter awaits for you, ${name}. \n Are you ready?`;
-            const typeWriterElement = document.getElementById('typewriter');
-            let i = 0;
-            
-            function type() {
-                if (i < text.length) {
-                    typeWriterElement.innerHTML += text.charAt(i) === '\n' ? '<br/>' : text.charAt(i);
-                    i++;
-                    setTimeout(type, 50);
-                } else {
-                    // After typing finishes, wait 2 seconds then go to Finale
-                    setTimeout(launchFinale, 2000);
-                }
-            }
-            type();
-        }
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        container.appendChild(renderer.domElement);
 
-        function launchFinale() {
-            // Hide Scene 2
-            document.getElementById('scene2').classList.add('hidden');
-            
-            // Show Scene 3
-            const scene3 = document.getElementById('scene3');
-            scene3.classList.remove('hidden');
+        // --- LIGHTING (Studio Lighting Setup) ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
 
-            // Start Fireworks Loop
-            animateFireworks();
-            
-            // Initial Boom
-            for(let i=0; i<5; i++) {
-                setTimeout(() => {
-                    createFirework(window.innerWidth/2 + (Math.random()*200 - 100), window.innerHeight/2 + (Math.random()*200 - 100));
-                }, i * 300);
-            }
-        }
+        const dirLight = new THREE.DirectionalLight(0xfff0dd, 1);
+        dirLight.position.set(5, 10, 7);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        scene.add(dirLight);
 
-        // --- 3. FLOWER ANIMATION (CSS + JS) ---
-        function createFlowerRain() {
-            const container = document.getElementById('scene2');
-            for (let i = 0; i < 50; i++) {
-                let petal = document.createElement('div');
-                petal.classList.add('petal');
-                petal.style.left = Math.random() * 100 + 'vw';
-                petal.style.width = Math.random() * 15 + 10 + 'px';
-                petal.style.height = petal.style.width;
-                petal.style.animationDuration = Math.random() * 3 + 2 + 's';
-                petal.style.animationDelay = Math.random() * 2 + 's';
-                container.appendChild(petal);
-            }
-        }
+        const fillLight = new THREE.DirectionalLight(0xebeeff, 0.5); // Cool fill light
+        fillLight.position.set(-5, 0, 5);
+        scene.add(fillLight);
 
-        // --- 4. ADVANCED FIREWORKS ENGINE ---
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        let w, h;
-        let particles = [];
+        // --- OBJECTS: LUXURY BALLOONS ---
+        const balloonGeometry = new THREE.SphereGeometry(0.8, 32, 32);
+        const balloons = [];
+        const balloonColors = [
+            0xffcfd2, // Pastel Pink
+            0xe3f2fd, // Pastel Blue
+            0xfff9c4, // Pastel Yellow
+            0xffd700, // Gold (Metallic)
+            0xc0c0c0  // Silver
+        ];
 
-        function resize() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-        }
-        window.addEventListener("resize", resize);
-        resize();
+        // Create random balloons
+        for (let i = 0; i < 40; i++) {
+            const color = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+            const isMetallic = Math.random() > 0.6; // 40% chance of being metallic
 
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x; this.y = y; this.color = color;
-                this.angle = Math.random() * Math.PI * 2;
-                this.velocity = Math.random() * 8 + 2; // High velocity for explosion
-                this.friction = 0.95;
-                this.gravity = 0.05;
-                this.alpha = 1;
-                this.decay = Math.random() * 0.015 + 0.005;
-                
-                this.vx = Math.cos(this.angle) * this.velocity;
-                this.vy = Math.sin(this.angle) * this.velocity;
-            }
-            
-            update() {
-                this.vx *= this.friction;
-                this.vy *= this.friction;
-                this.vy += this.gravity;
-                this.x += this.vx;
-                this.y += this.vy;
-                this.alpha -= this.decay;
-            }
-            
-            draw() {
-                ctx.save();
-                ctx.globalAlpha = this.alpha;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                // Add Trail
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = this.color;
-                ctx.restore();
-            }
-        }
-
-        function createFirework(x, y) {
-            // Gold, Cyan, Magenta, White
-            const colors = ['#d4af37', '#00f3ff', '#ff00ff', '#ffffff', '#ff4d4d'];
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            
-            // Create explosion
-            for (let i = 0; i < 80; i++) {
-                particles.push(new Particle(x, y, color));
-            }
-        }
-
-        function animateFireworks() {
-            // Clear with slight opacity for trails
-            ctx.fillStyle = "rgba(5, 5, 5, 0.2)";
-            ctx.fillRect(0, 0, w, h);
-
-            particles.forEach((p, index) => {
-                p.update();
-                p.draw();
-                if (p.alpha <= 0) particles.splice(index, 1);
+            const material = new THREE.MeshPhysicalMaterial({
+                color: color,
+                metalness: isMetallic ? 0.6 : 0.1,
+                roughness: isMetallic ? 0.1 : 0.4,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.1,
+                reflectivity: 1
             });
 
-            // Random fireworks
-            if (Math.random() < 0.04) {
-                createFirework(Math.random() * w, Math.random() * h * 0.6);
-            }
+            const balloon = new THREE.Mesh(balloonGeometry, material);
+            
+            // Random start positions (spread out)
+            balloon.position.x = (Math.random() - 0.5) * 20;
+            balloon.position.y = (Math.random() - 0.5) * 20 - 10; // Start lower
+            balloon.position.z = (Math.random() - 0.5) * 10 - 5;
+            
+            balloon.castShadow = true;
+            balloon.receiveShadow = true;
+            
+            // Custom properties for animation
+            balloon.userData = {
+                speed: 0.02 + Math.random() * 0.03,
+                wobbleOffset: Math.random() * Math.PI * 2,
+                wobbleSpeed: 0.5 + Math.random() * 0.5
+            };
 
-            requestAnimationFrame(animateFireworks);
+            scene.add(balloon);
+            balloons.push(balloon);
         }
 
-        // Interactive Firework
-        document.addEventListener('click', (e) => {
-            // Only if scene 3 is active
-            if(!document.getElementById('scene3').classList.contains('hidden')){
-                createFirework(e.clientX, e.clientY);
-            }
+        // --- OBJECTS: CONFETTI (Falling Papers) ---
+        const confettiCount = 500;
+        const confettiGeometry = new THREE.PlaneGeometry(0.15, 0.3);
+        const confetti = [];
+
+        for(let i=0; i<confettiCount; i++) {
+            const material = new THREE.MeshBasicMaterial({
+                color: balloonColors[Math.floor(Math.random() * balloonColors.length)],
+                side: THREE.DoubleSide
+            });
+            const mesh = new THREE.Mesh(confettiGeometry, material);
+            
+            mesh.position.set(
+                (Math.random() - 0.5) * 25,
+                Math.random() * 20 + 10, // Start high up
+                (Math.random() - 0.5) * 15
+            );
+            
+            mesh.userData = {
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.05,
+                    -(0.02 + Math.random() * 0.05), // Falling down
+                    (Math.random() - 0.5) * 0.05
+                ),
+                rotationSpeed: new THREE.Vector3(
+                    Math.random() * 0.1,
+                    Math.random() * 0.1,
+                    Math.random() * 0.1
+                )
+            };
+            
+            scene.add(mesh);
+            confetti.push(mesh);
+        }
+
+        // --- ANIMATION LOOP ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            // Animate Balloons (Floating Up & Wobbling)
+            balloons.forEach(b => {
+                b.position.y += b.userData.speed;
+                // Wobble motion
+                b.position.x += Math.sin(time * b.userData.wobbleSpeed + b.userData.wobbleOffset) * 0.01;
+
+                // Reset if goes too high
+                if (b.position.y > 15) {
+                    b.position.y = -15;
+                    b.position.x = (Math.random() - 0.5) * 20;
+                }
+            });
+
+            // Animate Confetti (Falling & Spinning)
+            confetti.forEach(c => {
+                c.position.add(c.userData.velocity);
+                c.rotation.x += c.userData.rotationSpeed.x;
+                c.rotation.y += c.userData.rotationSpeed.y;
+                c.rotation.z += c.userData.rotationSpeed.z;
+
+                // Reset if falls below screen
+                if (c.position.y < -10) {
+                    c.position.y = 15;
+                    c.position.x = (Math.random() - 0.5) * 25;
+                }
+            });
+
+            // Camera subtle interaction
+            camera.position.x += (mouseX * 2 - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY * 2 - camera.position.y) * 0.05;
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+        }
+
+        // Mouse Interaction
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) - 0.5;
+            mouseY = (e.clientY / window.innerHeight) - 0.5;
         });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+
+        // --- GSAP TEXT ANIMATIONS (The "Modern" Feel) ---
+        const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+
+        // Sequence
+        tl.to(".pre-title", { opacity: 1, duration: 1, delay: 0.5 })
+          .to("h1 span", { y: "0%", duration: 1.5, stagger: 0.2 }, "-=0.5")
+          .to(".year-huge", { opacity: 0.1, scale: 1, duration: 2, ease: "slow(0.7, 0.7, false)" }, "-=1.5") // Subtle large text background
+          .to(".wish-message", { opacity: 1, y: 0, duration: 1 }, "-=1")
+          .to(".cta-btn", { opacity: 1, y: 0, duration: 1 }, "-=0.8");
+
+        // --- CELEBRATION FUNCTION ---
+        function celebrate() {
+            // Speed up balloons and confetti temporarily
+            balloons.forEach(b => b.userData.speed += 0.1);
+            
+            // Animation for button click
+            gsap.to(".cta-btn", { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 });
+            
+            // Add a burst of light
+            const flash = document.createElement('div');
+            flash.style.position = 'fixed';
+            flash.style.top = 0;
+            flash.style.left = 0;
+            flash.style.width = '100%';
+            flash.style.height = '100%';
+            flash.style.background = 'white';
+            flash.style.zIndex = 100;
+            flash.style.opacity = 0.8;
+            document.body.appendChild(flash);
+            
+            gsap.to(flash, { opacity: 0, duration: 0.8, onComplete: () => flash.remove() });
+        }
     </script>
 </body>
 </html>
